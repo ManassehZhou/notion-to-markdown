@@ -1,0 +1,30 @@
+# Notion to Markdown Configuration
+# General Markdown configuration - Compatible with Hugo, Hexo, Jekyll, and more
+
+# Math equations - using standard LaTeX notation (most static site generators support this)
+math_template: |
+  $$
+  {{.Expression}}
+  $$
+
+# Details/Toggle blocks - using HTML details element (universally supported)
+details_template: |
+  <details>
+  <summary>{{.Summary}}</summary>
+  {{.Content}}
+  </details>
+
+# Video blocks - using standard HTML video tag or iframe
+video_template: '<iframe src="{{.URL}}" frameborder="0" allowfullscreen></iframe>'
+
+# PDF blocks - using standard link
+pdf_template: "[📄 {{.Text}}]({{.URL}})"
+
+# Embed blocks - using iframe
+embed_template: '<iframe src="{{.URL}}" width="100%" height="400"></iframe>'
+
+# Callout blocks - using blockquote (universally supported)
+callout_template: "> **Note:** {{.Content}}"
+
+# File blocks - using standard markdown link
+file_template: "[📁 {{.Text}}]({{.URL}})"

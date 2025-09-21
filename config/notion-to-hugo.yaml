@@ -1,0 +1,31 @@
+# Notion to Hugo Configuration
+# Default Hugo shortcode configuration
+
+# Math equations - using Hugo math shortcode
+math_template: |
+  {{< math >}}
+  $$
+  {{.Expression}}
+  $$
+  {{< /math >}}
+
+# Details/Toggle blocks - using Hugo details shortcode
+details_template: |
+  {{< details summary="{{.Summary}}">}}
+  {{.Content}}
+  {{< /details >}}
+
+# Video blocks - using Hugo video shortcode
+video_template: "{{< video src=\"{{.URL}}\" >}}"
+
+# PDF blocks - using Hugo pdf shortcode
+pdf_template: "{{< pdf src=\"{{.URL}}\" >}}"
+
+# Embed blocks - using Hugo embed shortcode
+embed_template: "{{< embed url=\"{{.URL}}\" >}}"
+
+# Callout blocks - using simple markdown quote
+callout_template: "> {{.Content}}"
+
+# File blocks - using markdown link
+file_template: "[{{.Text}}]({{.URL}})"

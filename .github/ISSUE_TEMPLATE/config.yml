@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 GitHub Discussions
+    url: https://github.com/ManassehZhou/notion-to-hugo/discussions
+    about: Ask questions and discuss with the community
+  - name: 📖 Documentation
+    url: https://github.com/ManassehZhou/notion-to-hugo#readme
+    about: Read the project documentation
+  - name: 🎯 Hugo Documentation
+    url: https://gohugo.io/documentation/
+    about: Learn more about Hugo static site generator
+  - name: 🔧 Notion API Documentation
+    url: https://developers.notion.com/
+    about: Official Notion API documentation

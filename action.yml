@@ -1,0 +1,40 @@
+name: 'Notion to Markdown'
+description: 'Fetch content from Notion Database and convert to Markdown files with front matter'
+author: 'ManassehZhou'
+
+inputs:
+  notion-token:
+    description: 'Notion integration token'
+    required: true
+  notion-database-id:
+    description: 'Notion database ID to fetch content from'
+    required: true
+  output-directory:
+    description: 'Output directory for generated markdown files'
+    required: false
+    default: 'content'
+  config-file:
+    description: 'Path to YAML configuration file for customizing Markdown output'
+    required: false
+    default: 'config/notion-to-markdown.yaml'
+
+outputs:
+  files-generated:
+    description: 'Number of markdown files generated'
+  output-path:
+    description: 'Path where files were generated'
+  success:
+    description: 'Whether the operation completed successfully'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.notion-token }}
+    - ${{ inputs.notion-database-id }}
+    - ${{ inputs.output-directory }}
+    - ${{ inputs.config-file }}
+
+branding:
+  icon: 'file-text'
+  color: 'blue'

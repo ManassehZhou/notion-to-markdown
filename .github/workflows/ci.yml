@@ -1,0 +1,144 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version: 1.25
+
+    - name: Cache Go modules
+      uses: actions/cache@v3
+      with:
+        path: ~/go/pkg/mod
+        key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+        restore-keys: |
+          ${{ runner.os }}-go-
+
+    - name: Download dependencies
+      run: go mod download
+
+    - name: Run tests
+      run: go test -v -race -coverprofile=coverage.out ./...
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+      with:
+        file: ./coverage.out
+
+    - name: Run go vet
+      run: go vet ./...
+
+    - name: Run go fmt
+      run: |
+        if [ "$(gofmt -s -l . | wc -l)" -gt 0 ]; then
+          echo "Go files are not formatted:"
+          gofmt -s -l .
+          exit 1
+        fi
+
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version: 1.25
+
+    - name: Build binary
+      run: go build -v -o notion-to-markdown main.go
+
+    - name: Upload binary as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: notion-to-markdown-binary
+        path: notion-to-markdown
+
+  docker:
+    name: Build Docker Image
+    runs-on: ubuntu-latest
+    needs: test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v3
+
+    - name: Build Docker image
+      uses: docker/build-push-action@v6
+      with:
+        context: .
+        push: false
+        tags: notion-to-markdown:test
+        cache-from: type=gha
+        cache-to: type=gha,mode=max
+
+  integration-test:
+    name: Integration Test
+    runs-on: ubuntu-latest
+    needs: [build, docker]
+    if: github.event_name == 'pull_request'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Test Action (Dry Run)
+      uses: ./
+      with:
+        notion-token: "fake-token-for-testing"
+        notion-database-id: "fake-database-id"
+        output-directory: "test-output"
+      continue-on-error: true
+
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    needs: [test, build, docker]
+    if: github.event_name == 'release'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v5
+
+    - name: Set up Go
+      uses: actions/setup-go@v6
+      with:
+        go-version: 1.25
+
+    - name: Build release binaries
+      run: |
+        GOOS=linux GOARCH=amd64 go build -o notion-to-markdown-linux-amd64 main.go
+        GOOS=darwin GOARCH=amd64 go build -o notion-to-markdown-darwin-amd64 main.go
+        GOOS=windows GOARCH=amd64 go build -o notion-to-markdown-windows-amd64.exe main.go
+
+    - name: Upload release assets
+      uses: softprops/action-gh-release@v1
+      with:
+        files: |
+          notion-to-markdown-linux-amd64
+          notion-to-markdown-darwin-amd64
+          notion-to-markdown-windows-amd64.exe

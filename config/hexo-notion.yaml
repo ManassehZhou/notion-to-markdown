@@ -1,0 +1,33 @@
+# Notion to Markdown Configuration for Hexo
+# Hexo-specific configuration with tags and features
+
+# Math equations - using Hexo math rendering
+math_template: |
+  {% math %}
+  {{.Expression}}
+  {% endmath %}
+
+# Details/Toggle blocks - using HTML details (Hexo supports HTML)
+details_template: |
+  <details>
+  <summary>{{.Summary}}</summary>
+  {{.Content}}
+  </details>
+
+# Video blocks - using iframe or Hexo video tag
+video_template: '{% video "{{.URL}}" %}'
+
+# PDF blocks - using link
+pdf_template: "[📄 {{.Text}}]({{.URL}})"
+
+# Embed blocks - using iframe
+embed_template: '<iframe src="{{.URL}}" width="100%" height="400"></iframe>'
+
+# Callout blocks - using Hexo note tag
+callout_template: |
+  {% note info %}
+  {{.Content}}
+  {% endnote %}
+
+# File blocks - using standard markdown link
+file_template: "[📁 {{.Text}}]({{.URL}})"

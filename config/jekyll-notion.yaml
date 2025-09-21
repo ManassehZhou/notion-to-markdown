@@ -1,0 +1,31 @@
+# Notion to Markdown Configuration for Jekyll
+# Jekyll-specific configuration
+
+# Math equations - using standard LaTeX (Jekyll with MathJax)
+math_template: |
+  $$
+  {{.Expression}}
+  $$
+
+# Details/Toggle blocks - using HTML details (Jekyll supports HTML)
+details_template: |
+  <details>
+  <summary>{{.Summary}}</summary>
+  {{.Content}}
+  </details>
+
+# Video blocks - using iframe
+video_template: '<iframe src="{{.URL}}" frameborder="0" allowfullscreen></iframe>'
+
+# PDF blocks - using link
+pdf_template: "[📄 {{.Text}}]({{.URL}})"
+
+# Embed blocks - using iframe
+embed_template: '<iframe src="{{.URL}}" width="100%" height="400"></iframe>'
+
+# Callout blocks - using Jekyll include (if you have a callout include)
+callout_template: |
+  {% include callout.html content="{{.Content}}" type="info" %}
+
+# File blocks - using standard markdown link
+file_template: "[📁 {{.Text}}]({{.URL}})"
