@@ -1,10 +1,10 @@
 blank_issues_enabled: false
 contact_links:
   - name: 💬 GitHub Discussions
-    url: https://github.com/ManassehZhou/notion-to-hugo/discussions
+    url: https://github.com/ManassehZhou/notion-to-markdown/discussions
     about: Ask questions and discuss with the community
   - name: 📖 Documentation
-    url: https://github.com/ManassehZhou/notion-to-hugo#readme
+    url: https://github.com/ManassehZhou/notion-to-markdown#readme
     about: Read the project documentation
   - name: 🎯 Hugo Documentation
     url: https://gohugo.io/documentation/

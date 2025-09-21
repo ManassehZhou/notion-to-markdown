@@ -32,7 +32,7 @@ Describe the use case for this feature:
 If applicable, show how this feature would be configured:
 
 ```yaml
-- uses: ManassehZhou/notion-to-hugo@v1
+- uses: ManassehZhou/notion-to-markdown@v1
   with:
     # Example of how the new feature would be used
     your-new-option: 'example-value'

@@ -1,0 +1,124 @@
+# GoReleaser configuration for notion-to-markdown
+# Make sure to check the documentation at https://goreleaser.com
+
+# The lines below are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/need to use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj
+
+version: 2
+
+project_name: notion-to-markdown
+
+before:
+  hooks:
+    # You may remove this if you don't use go modules.
+    - go mod tidy
+    # you may remove this if you don't need go generate
+    - go generate ./...
+
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+    goarm:
+      - "7"
+    ignore:
+      - goos: windows
+        goarch: arm64
+    main: ./main.go
+    binary: notion-to-markdown
+    ldflags:
+      - -s -w
+      - -X main.version={{.Version}}
+      - -X main.commit={{.Commit}}
+      - -X main.date={{.Date}}
+
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    files:
+      - README*
+      - LICENSE*
+      - config/*.yaml
+    # use zip for windows archives
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+changelog:
+  sort: asc
+  use: github
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+      - "^refactor:"
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: 'Bug fixes'
+      regexp: '^.*?fix(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
+
+checksum:
+  name_template: 'checksums.txt'
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+release:
+  github:
+    owner: ManassehZhou
+    name: notion-to-markdown
+  draft: false
+  prerelease: auto
+  mode: replace
+  header: |
+    ## What's Changed
+    
+    This release includes improvements to the Notion to Markdown converter.
+    
+    ### Download the right binary for your system:
+    - **Linux (64-bit)**: `notion-to-markdown_Linux_x86_64.tar.gz`
+    - **macOS (Intel)**: `notion-to-markdown_Darwin_x86_64.tar.gz` 
+    - **macOS (Apple Silicon)**: `notion-to-markdown_Darwin_arm64.tar.gz`
+    - **Windows (64-bit)**: `notion-to-markdown_Windows_x86_64.zip`
+    
+  footer: |
+    **Full Changelog**: https://github.com/ManassehZhou/notion-to-markdown/compare/{{ .PreviousTag }}...{{ .Tag }}
+    
+    ---
+    
+    ### Installation
+    
+    #### Using Go
+    ```bash
+    go install github.com/ManassehZhou/notion-to-markdown@{{ .Tag }}
+    ```
+    
+    #### Using curl (Linux/macOS)
+    ```bash
+    curl -L https://github.com/ManassehZhou/notion-to-markdown/releases/download/{{ .Tag }}/notion-to-markdown_$(uname -s)_$(uname -m).tar.gz | tar xz
+    ```
+    
+    ---
+    
+    Released by [GoReleaser](https://github.com/goreleaser/goreleaser).

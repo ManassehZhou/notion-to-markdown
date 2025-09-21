@@ -18,7 +18,7 @@ Describe what you've already attempted.
 Share your current action configuration:
 
 ```yaml
-- uses: ManassehZhou/notion-to-hugo@v1
+- uses: ManassehZhou/notion-to-markdown@v1
   with:
     # Your configuration here
 ```

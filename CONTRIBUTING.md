@@ -32,13 +32,13 @@ This project and everyone participating in it is governed by our Code of Conduct
 1. **Fork the repository** on GitHub
 2. **Clone your fork** locally:
    ```bash
-   git clone https://github.com/YOUR_USERNAME/notion-to-hugo.git
-   cd notion-to-hugo
+   git clone https://github.com/YOUR_USERNAME/notion-to-markdown.git
+   cd notion-to-markdown
    ```
 
 3. **Add the upstream remote**:
    ```bash
-   git remote add upstream https://github.com/ManassehZhou/notion-to-hugo.git
+   git remote add upstream https://github.com/ManassehZhou/notion-to-markdown.git
    ```
 
 4. **Install dependencies**:
@@ -56,14 +56,14 @@ This project and everyone participating in it is governed by our Code of Conduct
 ### Project Structure
 
 ```
-notion-to-hugo/
+notion-to-markdown/
 ├── action.yml              # GitHub Action metadata
 ├── Dockerfile              # Container definition
 ├── entrypoint.sh           # Action entrypoint script
 ├── main.go                 # CLI application
 ├── go.mod                  # Go module definition
 ├── config/                 
-│   └── notion-to-hugo.yaml # Default configuration
+│   └── notion-to-markdown.yaml # Default configuration
 ├── internal/               # Internal packages
 │   ├── notionclient/       # Notion API client
 │   ├── renderer/           # Markdown rendering
@@ -126,8 +126,8 @@ go run main.go -token $NOTION_TOKEN -database $NOTION_DATABASE_ID -out test-outp
 Build and test the Docker image:
 
 ```bash
-docker build -t notion-to-hugo .
-docker run -e NOTION_TOKEN=$NOTION_TOKEN -e NOTION_DATABASE_ID=$NOTION_DATABASE_ID notion-to-hugo
+docker build -t notion-to-markdown .
+docker run -e NOTION_TOKEN=$NOTION_TOKEN -e NOTION_DATABASE_ID=$NOTION_DATABASE_ID notion-to-markdown
 ```
 
 ### Testing GitHub Action Locally
@@ -247,8 +247,8 @@ We use [Semantic Versioning](https://semver.org/):
 
 ## 🆘 Getting Help
 
-- 💬 [Start a discussion](https://github.com/ManassehZhou/notion-to-hugo/discussions)
-- 🐛 [Report an issue](https://github.com/ManassehZhou/notion-to-hugo/issues)
+- 💬 [Start a discussion](https://github.com/ManassehZhou/notion-to-markdown/discussions)
+- 🐛 [Report an issue](https://github.com/ManassehZhou/notion-to-markdown/issues)
 - 📧 Email: manasseh.zhou@example.com
 
 ## 📚 Resources

@@ -1,6 +1,6 @@
 module github.com/ManassehZhou/notion-to-markdown
 
-go 1.21
+go 1.25
 
 require github.com/jomei/notionapi v1.13.3
 

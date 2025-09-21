@@ -1,4 +1,4 @@
-name: 'Notion to Markdown'
+name: 'Notion to Markdown Helper'
 description: 'Fetch content from Notion Database and convert to Markdown files with front matter'
 author: 'ManassehZhou'
 

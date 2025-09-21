@@ -1,4 +1,4 @@
-FROM golang:1.21-alpine AS builder
+FROM golang:1.25-alpine AS builder
 
 # Install git and ca-certificates for building
 RUN apk add --no-cache git ca-certificates
@@ -29,7 +29,7 @@ WORKDIR /app
 COPY --from=builder /app/notion-to-markdown .
 
 # Copy default config file
-COPY --from=builder /app/config/notion-to-hugo.yaml ./config/
+COPY --from=builder /app/config/ ./config/
 
 # Copy entrypoint script
 COPY entrypoint.sh .

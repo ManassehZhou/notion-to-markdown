@@ -29,24 +29,15 @@ echo "Output Directory: $OUTPUT_DIRECTORY"
 echo "Config File: $CONFIG_FILE"
 
 # Change to workspace directory
-cd /github/workspace
-
-# Create output directory if it doesn't exist
-mkdir -p "$OUTPUT_DIRECTORY"
-
-# Ensure output directory is writable
-if [ ! -w "$OUTPUT_DIRECTORY" ]; then
-    echo "Error: Output directory $OUTPUT_DIRECTORY is not writable"
-    exit 1
-fi
+cd $GITHUB_WORKSPACE
 
 # Set environment variables for the Go application
 export NOTION_TOKEN="$NOTION_TOKEN"
 export NOTION_DATABASE_ID="$NOTION_DATABASE_ID"
 
-# Run the notion-to-hugo tool
-echo "Running notion-to-hugo conversion..."
-if /app/notion-to-markdown -token "$NOTION_TOKEN" -database "$NOTION_DATABASE_ID" -out "$OUTPUT_DIRECTORY" -config "/app/$CONFIG_FILE"; then
+# Run the notion-to-markdown tool
+echo "Running notion-to-markdown conversion..."
+if /app/notion-to-markdown -token "$NOTION_TOKEN" -database "$NOTION_DATABASE_ID" -out "$OUTPUT_DIRECTORY" -config "$CONFIG_FILE"; then
     # Count generated files (with safety limit to prevent output overflow)
     FILES_COUNT=$(find "$OUTPUT_DIRECTORY" -name "*.md" -type f | wc -l | tr -d ' ')
     

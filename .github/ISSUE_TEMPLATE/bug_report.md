@@ -35,7 +35,7 @@ If applicable, add screenshots to help explain your problem.
 
 **Action Configuration:**
 ```yaml
-- uses: ManassehZhou/notion-to-hugo@v1
+- uses: ManassehZhou/notion-to-markdown@v1
   with:
     notion-token: ${{ secrets.NOTION_TOKEN }}
     notion-database-id: ${{ secrets.NOTION_DATABASE_ID }}

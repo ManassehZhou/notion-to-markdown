@@ -1,8 +1,8 @@
 # Notion to Markdown GitHub Action
 
-[![GitHub release](https://img.shields.io/github/release/ManassehZhou/notion-to-hugo.svg)](https://GitHub.com/ManassehZhou/notion-to-hugo/releases/)
-[![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/ManassehZhou/notion-to-hugo/blob/main/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/ManassehZhou/notion-to-hugo.svg)](https://GitHub.com/ManassehZhou/notion-to-hugo/stargazers/)
+[![GitHub release](https://img.shields.io/github/release/ManassehZhou/notion-to-markdown.svg)](https://GitHub.com/ManassehZhou/notion-to-markdown/releases/)
+[![GitHub license](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](https://github.com/ManassehZhou/notion-to-markdown/blob/main/LICENSE)
+[![GitHub stars](https://img.shields.io/github/stars/ManassehZhou/notion-to-markdown.svg)](https://GitHub.com/ManassehZhou/notion-to-markdown/stargazers/)
 
 🚀 A GitHub Action that automatically fetches content from your Notion database and converts it into Markdown files with front matter. Compatible with popular static site generators like Hugo, Hexo, Jekyll, and more.
 
@@ -53,7 +53,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fetch content from Notion
-        uses: ManassehZhou/notion-to-hugo@v1
+        uses: ManassehZhou/notion-to-markdown@v1
         with:
           notion-token: ${{ secrets.NOTION_TOKEN }}
           notion-database-id: ${{ secrets.NOTION_DATABASE_ID }}
@@ -93,7 +93,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fetch content from Notion
-        uses: ManassehZhou/notion-to-hugo@v1
+        uses: ManassehZhou/notion-to-markdown@v1
         with:
           notion-token: ${{ secrets.NOTION_TOKEN }}
           notion-database-id: ${{ secrets.NOTION_DATABASE_ID }}
@@ -143,7 +143,7 @@ jobs:
           fetch-depth: 0
 
       - name: Fetch latest content from Notion
-        uses: ManassehZhou/notion-to-hugo@v1
+        uses: ManassehZhou/notion-to-markdown@v1
         with:
           notion-token: ${{ secrets.NOTION_TOKEN }}
           notion-database-id: ${{ secrets.NOTION_DATABASE_ID }}
@@ -186,7 +186,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fetch latest content from Notion
-        uses: ManassehZhou/notion-to-hugo@v1
+        uses: ManassehZhou/notion-to-markdown@v1
         with:
           notion-token: ${{ secrets.NOTION_TOKEN }}
           notion-database-id: ${{ secrets.NOTION_DATABASE_ID }}
@@ -232,7 +232,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Fetch latest content from Notion
-        uses: ManassehZhou/notion-to-hugo@v1
+        uses: ManassehZhou/notion-to-markdown@v1
         with:
           notion-token: ${{ secrets.NOTION_TOKEN }}
           notion-database-id: ${{ secrets.NOTION_DATABASE_ID }}
@@ -575,7 +575,7 @@ You can also use environment variables instead of action inputs:
 
 ```yaml
 - name: Fetch content from Notion
-  uses: ManassehZhou/notion-to-hugo@v1
+  uses: ManassehZhou/notion-to-markdown@v1
   env:
     NOTION_TOKEN: ${{ secrets.NOTION_TOKEN }}
     NOTION_DATABASE_ID: ${{ secrets.NOTION_DATABASE_ID }}
@@ -589,14 +589,14 @@ To fetch from multiple Notion databases:
 
 ```yaml
 - name: Fetch blog posts
-  uses: ManassehZhou/notion-to-hugo@v1
+  uses: ManassehZhou/notion-to-markdown@v1
   with:
     notion-token: ${{ secrets.NOTION_TOKEN }}
     notion-database-id: ${{ secrets.BLOG_DATABASE_ID }}
     output-directory: 'content/posts'
 
 - name: Fetch documentation
-  uses: ManassehZhou/notion-to-hugo@v1
+  uses: ManassehZhou/notion-to-markdown@v1
   with:
     notion-token: ${{ secrets.NOTION_TOKEN }}
     notion-database-id: ${{ secrets.DOCS_DATABASE_ID }}
@@ -609,7 +609,7 @@ Add custom scripts after content generation:
 
 ```yaml
 - name: Fetch content from Notion
-  uses: ManassehZhou/notion-to-hugo@v1
+  uses: ManassehZhou/notion-to-markdown@v1
   with:
     notion-token: ${{ secrets.NOTION_TOKEN }}
     notion-database-id: ${{ secrets.NOTION_DATABASE_ID }}
@@ -645,7 +645,7 @@ Add custom scripts after content generation:
 #### Memory Issues
 ```yaml
 - name: Fetch content with retry
-  uses: ManassehZhou/notion-to-hugo@v1
+  uses: ManassehZhou/notion-to-markdown@v1
   with:
     notion-token: ${{ secrets.NOTION_TOKEN }}
     notion-database-id: ${{ secrets.NOTION_DATABASE_ID }}
@@ -661,7 +661,7 @@ Enable verbose logging for troubleshooting:
 
 ```yaml
 - name: Debug Notion sync
-  uses: ManassehZhou/notion-to-hugo@v1
+  uses: ManassehZhou/notion-to-markdown@v1
   with:
     notion-token: ${{ secrets.NOTION_TOKEN }}
     notion-database-id: ${{ secrets.NOTION_DATABASE_ID }}
@@ -704,7 +704,38 @@ We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for deta
 2. Install Go 1.21 or later
 3. Install dependencies: `go mod download`
 4. Run tests: `go test ./...`
-5. Build: `go build -o notion-to-hugo main.go`
+5. Build: `go build -o notion-to-markdown main.go`
+
+### Release Process
+
+This project uses [GoReleaser](https://goreleaser.com/) for automated releases:
+
+#### For Maintainers
+
+1. **Create and push a tag**:
+   ```bash
+   git tag v1.0.0
+   git push origin v1.0.0
+   ```
+
+2. **Automatic release**: The GitHub Action will automatically:
+   - Build binaries for all supported platforms
+   - Create a GitHub Release with download links
+   - Generate checksums and release notes
+
+#### Supported Platforms
+- Linux (amd64, arm64)
+- macOS (amd64, arm64) 
+- Windows (amd64)
+
+#### Manual Release (Development)
+```bash
+# Test release locally (no publishing)
+goreleaser release --snapshot --clean
+
+# Check configuration
+goreleaser check
+```
 
 ## 📄 License
 
@@ -712,9 +743,9 @@ This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENS
 
 ## 🐛 Issues and Support
 
-- 🐛 [Report a bug](https://github.com/ManassehZhou/notion-to-hugo/issues/new?template=bug_report.md)
-- 💡 [Request a feature](https://github.com/ManassehZhou/notion-to-hugo/issues/new?template=feature_request.md)
-- 💬 [Ask a question](https://github.com/ManassehZhou/notion-to-hugo/discussions)
+- 🐛 [Report a bug](https://github.com/ManassehZhou/notion-to-markdown/issues/new?template=bug_report.md)
+- 💡 [Request a feature](https://github.com/ManassehZhou/notion-to-markdown/issues/new?template=feature_request.md)
+- 💬 [Ask a question](https://github.com/ManassehZhou/notion-to-markdown/discussions)
 
 ## 🌟 Acknowledgments
 

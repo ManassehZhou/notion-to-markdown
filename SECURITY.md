@@ -115,8 +115,8 @@ Mitigation:
 ### 📞 Contact Information
 
 For non-security related issues, please use:
-- GitHub Issues: https://github.com/ManassehZhou/notion-to-hugo/issues
-- GitHub Discussions: https://github.com/ManassehZhou/notion-to-hugo/discussions
+- GitHub Issues: https://github.com/ManassehZhou/notion-to-markdown/issues
+- GitHub Discussions: https://github.com/ManassehZhou/notion-to-markdown/discussions
 
 ---
 
