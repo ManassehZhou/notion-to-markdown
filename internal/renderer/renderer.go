@@ -64,96 +64,147 @@ func (r *Renderer) RenderPage(page notionapi.Page, blocks []notionapi.Block, get
 
 // metadata gathers the common properties used in frontmatter and filename logic.
 type metadata struct {
-	Title      string   `yaml:"title"`
-	Slug       string   `yaml:"slug"`
-	Date       string   `yaml:"date,omitempty"`
-	LastMod    string   `yaml:"lastmod,omitempty"`
-	Tags       []string `yaml:"tags,omitempty"`
-	Categories []string `yaml:"categories,omitempty"`
-	Summary    string   `yaml:"summary,omitempty"`
-	Draft      bool     `yaml:"draft,omitempty"`
-	Type       string   `yaml:"type,omitempty"`
+	// Core fields needed for functionality
+	Title    string `yaml:"title"`
+	Slug     string `yaml:"slug,omitempty"`
+	pathType string `yaml:"-"` // Used internally for path generation logic
+
+	// All properties including user-defined ones
+	Properties map[string]interface{} `yaml:",inline"`
 }
 
 func (r *Renderer) parseMetadata(page notionapi.Page) metadata {
-	m := metadata{Title: "untitled"}
-	// Use Notion-provided timestamps: prefer `date` property if present;
-	// otherwise fall back to the page's CreatedTime. LastEditedTime maps to lastmod.
+	m := metadata{
+		Title:      "untitled",
+		Properties: make(map[string]interface{}),
+	}
+
+	// Set default timestamps from Notion page metadata
 	if !page.CreatedTime.IsZero() {
-		m.Date = page.CreatedTime.Format("2006-01-02T15:04:05Z07:00")
+		m.Properties["date"] = page.CreatedTime.Format("2006-01-02T15:04:05Z07:00")
 	}
 	if !page.LastEditedTime.IsZero() {
-		m.LastMod = page.LastEditedTime.Format("2006-01-02T15:04:05Z07:00")
+		m.Properties["lastmod"] = page.LastEditedTime.Format("2006-01-02T15:04:05Z07:00")
 	}
+
+	// Parse all properties from the Notion page
 	for k, prop := range page.Properties {
-		switch strings.ToLower(k) {
+		lowerKey := strings.ToLower(k)
+
+		// Handle special properties that affect internal logic
+		switch lowerKey {
 		case "title", "name":
 			if tp, ok := prop.(*notionapi.TitleProperty); ok && len(tp.Title) > 0 {
 				m.Title = tp.Title[0].PlainText
+				m.Properties["title"] = m.Title
 			}
 		case "slug":
-			switch v := prop.(type) {
-			case *notionapi.RichTextProperty:
-				if len(v.RichText) > 0 {
-					m.Slug = v.RichText[0].PlainText
-				}
-			case *notionapi.TitleProperty:
-				if len(v.Title) > 0 {
-					m.Slug = v.Title[0].PlainText
-				}
+			value := extractPropertyValue(prop)
+			if str, ok := value.(string); ok && str != "" {
+				m.Slug = str
+				m.Properties["slug"] = str
 			}
 		case "date":
-			if dp, ok := prop.(*notionapi.DateProperty); ok {
-				if dp.Date != nil && dp.Date.Start != nil {
-					// dp.Date.Start is *notionapi.Date, which is an alias for time.Time
-					m.Date = time.Time(*dp.Date.Start).Format("2006-01-02T15:04:05Z07:00")
-				}
+			if dp, ok := prop.(*notionapi.DateProperty); ok && dp.Date != nil && dp.Date.Start != nil {
+				dateStr := time.Time(*dp.Date.Start).Format("2006-01-02T15:04:05Z07:00")
+				m.Properties["date"] = dateStr // Override default
 			}
-		case "tags", "tag":
-			if mp, ok := prop.(*notionapi.MultiSelectProperty); ok {
-				for _, sel := range mp.MultiSelect {
-					m.Tags = append(m.Tags, sel.Name)
-				}
-			}
-		case "categories", "category":
-			if mp, ok := prop.(*notionapi.MultiSelectProperty); ok {
-				for _, sel := range mp.MultiSelect {
-					m.Categories = append(m.Categories, sel.Name)
-				}
-			}
-		case "summary", "description":
-			switch v := prop.(type) {
-			case *notionapi.RichTextProperty:
-				if len(v.RichText) > 0 {
-					m.Summary = v.RichText[0].PlainText
-				}
-			case *notionapi.TitleProperty:
-				if len(v.Title) > 0 {
-					m.Summary = v.Title[0].PlainText
+		case "type":
+			value := extractPropertyValue(prop)
+			if str, ok := value.(string); ok && str != "" {
+				originalType := str
+				m.Properties["type"] = originalType
+
+				// Parse type for path generation logic
+				if strings.Contains(originalType, ":") {
+					parts := strings.SplitN(originalType, ":", 2)
+					if len(parts) == 2 {
+						pathCategory := strings.ToLower(strings.TrimSpace(parts[0]))
+						typeValue := strings.TrimSpace(parts[1])
+
+						if pathCategory == "pages" {
+							m.pathType = "pages"
+							m.Properties["type"] = typeValue // frontmatter gets "friends"
+						} else {
+							m.pathType = strings.ToLower(originalType)
+						}
+					} else {
+						m.pathType = strings.ToLower(originalType)
+					}
+				} else {
+					lowerType := strings.ToLower(originalType)
+					if lowerType == "post" {
+						m.pathType = "posts"
+						m.Properties["type"] = "posts" // Normalize in frontmatter too
+					} else {
+						m.pathType = lowerType
+					}
 				}
 			}
 		case "status":
+			// Handle status specially to set draft flag
 			if sp, ok := prop.(*notionapi.StatusProperty); ok {
-				if strings.ToLower(sp.Status.Name) == "draft" {
-					m.Draft = true
-				} else {
-					m.Draft = false
+				statusName := sp.Status.Name
+				m.Properties["status"] = statusName
+				if strings.ToLower(statusName) == "draft" {
+					m.Properties["draft"] = true
 				}
+				// Note: We don't set draft: false to allow omitempty behavior
 			}
-		case "type":
-			if sp, ok := prop.(*notionapi.SelectProperty); ok {
-				m.Type = strings.ToLower(sp.Select.Name)
-				if m.Type == "post" {
-					m.Type = "posts"
-				}
+		default:
+			// Handle all other properties dynamically
+			value := extractPropertyValue(prop)
+			if value != nil {
+				m.Properties[k] = value
 			}
 		}
 	}
+
+	// Set defaults
 	if m.Slug == "" {
 		m.Slug = m.Title
 	}
 	m.Slug = slugify(m.Slug)
+
+	// Set default pathType if not set
+	if m.pathType == "" {
+		if typeVal, exists := m.Properties["type"]; exists {
+			if str, ok := typeVal.(string); ok {
+				m.pathType = str
+			}
+		}
+	}
+
 	return m
+}
+
+// extractPropertyValue extracts the value from various Notion property types
+func extractPropertyValue(prop notionapi.Property) interface{} {
+	switch v := prop.(type) {
+	case *notionapi.TitleProperty:
+		if len(v.Title) > 0 {
+			return v.Title[0].PlainText
+		}
+	case *notionapi.RichTextProperty:
+		if len(v.RichText) > 0 {
+			return v.RichText[0].PlainText
+		}
+	case *notionapi.DateProperty:
+		if v.Date != nil && v.Date.Start != nil {
+			return time.Time(*v.Date.Start).Format("2006-01-02T15:04:05Z07:00")
+		}
+	case *notionapi.SelectProperty:
+		return v.Select.Name
+	case *notionapi.MultiSelectProperty:
+		var values []string
+		for _, sel := range v.MultiSelect {
+			values = append(values, sel.Name)
+		}
+		return values
+	case *notionapi.StatusProperty:
+		return v.Status.Name
+	}
+	return nil
 }
 
 // GetPageSlug is a small helper used by callers that need a page's slug
@@ -168,7 +219,7 @@ func (r *Renderer) GetPageSlug(page notionapi.Page) string {
 // without rendering the entire page. This is used for building the resolver map.
 func (r *Renderer) GetPagePath(page notionapi.Page) string {
 	m := r.parseMetadata(page)
-	safeType := slugify(m.Type)
+	safeType := slugify(m.pathType)
 
 	// default posts
 	if safeType == "" {
@@ -181,7 +232,7 @@ func (r *Renderer) GetPagePath(page notionapi.Page) string {
 }
 
 func (r *Renderer) buildFilename(m metadata) string {
-	safeType := slugify(m.Type)
+	safeType := slugify(m.pathType)
 	// default posts
 	if safeType == "" {
 		return filepath.ToSlash(filepath.Join("posts", m.Slug, "index.md"))
@@ -193,8 +244,8 @@ func (r *Renderer) buildFilename(m metadata) string {
 }
 
 func (r *Renderer) buildFrontMatter(m metadata) (string, error) {
-	// Marshal the metadata struct directly.
-	out, err := yaml.Marshal(m)
+	// Use the Properties map directly for YAML marshaling
+	out, err := yaml.Marshal(m.Properties)
 	if err != nil {
 		// Fallback to minimal frontmatter on error
 		return "", err
@@ -312,11 +363,18 @@ func (r *Renderer) renderBlocksRecursive(blocks []notionapi.Block, getChildren f
 		if err != nil {
 			return "", err
 		}
-		if prevIsList && isList {
-			markdown += s + "\n"
-		} else {
-			markdown += s + "\n\n"
+
+		// Add separator before current block (except for first block)
+		if markdown != "" {
+			if prevIsList && isList {
+				markdown += "\n"
+			} else {
+				markdown += "\n\n"
+			}
 		}
+
+		// Add the block content
+		markdown += s
 		prevIsList = isList
 	}
 	return markdown, nil

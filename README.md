@@ -6,6 +6,8 @@
 
 🚀 A GitHub Action that automatically fetches content from your Notion database and converts it into Markdown files with front matter. Compatible with popular static site generators like Hugo, Hexo, Jekyll, and more.
 
+**NEW**: Now automatically includes ALL custom properties from your Notion database in the generated frontmatter - no more manual configuration needed!
+
 ## ✨ Features
 
 - 📝 **Markdown Conversion**: Transform Notion pages into clean Markdown with front matter
@@ -16,6 +18,8 @@
 - 🖼️ **Media Handling**: Download and organize images, PDFs, and other attachments
 - ⚙️ **Flexible Configuration**: Customize rendering with YAML configuration files
 - 🏷️ **Front Matter**: Generate YAML front matter from Notion properties
+- 🔄 **Dynamic Properties**: Automatically include ALL custom properties from your Notion database
+- 🎯 **Smart Type Handling**: Support for advanced type formats like `pages:friends`
 
 ## 📋 Prerequisites
 
@@ -369,7 +373,51 @@ file_template: "[📁 {{.Text}}]({{.URL}})"
 
 ## 📁 Notion Database Structure
 
-Your Notion database should include these properties for optimal results. The action automatically maps these properties to front matter for static site generators:
+Your Notion database should include these properties for optimal results. The action automatically maps these properties to front matter for static site generators.
+
+### 🔄 Dynamic Property Support
+
+**NEW**: The action now automatically includes ALL custom properties from your Notion database in the generated frontmatter, not just the predefined ones listed below. This means any property you add to your database will appear in your Markdown files.
+
+#### Supported Property Types
+The following Notion property types are automatically converted to frontmatter:
+
+| Notion Type | Output Format | Example |
+|-------------|---------------|---------|
+| **Title** | String | `title: "My Article"` |
+| **Rich Text** | String (plain text) | `author: "John Doe"` |
+| **Date** | ISO 8601 string | `published: "2025-01-15T10:00:00Z07:00"` |
+| **Select** | String | `priority: "High"` |
+| **Multi-select** | Array of strings | `labels: ["important", "urgent"]` |
+| **Status** | String | `workflow: "In Progress"` |
+
+#### Examples of Custom Properties
+
+```yaml
+# Your Notion database properties:
+# Author (Rich Text): "Jane Smith"
+# Priority (Select): "High" 
+# Project (Select): "Website Redesign"
+# Keywords (Multi-select): ["SEO", "Performance", "Design"]
+# Review Status (Status): "Approved"
+# Due Date (Date): "2025-02-01"
+
+# Generated frontmatter:
+---
+title: "Optimizing Website Performance"
+Author: "Jane Smith"
+Priority: "High"
+Project: "Website Redesign"
+Keywords:
+  - "SEO"
+  - "Performance" 
+  - "Design"
+Review Status: "Approved"
+Due Date: "2025-02-01T00:00:00Z07:00"
+date: "2025-01-15T10:00:00Z07:00"
+lastmod: "2025-01-15T12:30:00Z07:00"
+---
+```
 
 ### Required Properties
 
@@ -454,7 +502,11 @@ Your Notion database should include these properties for optimal results. The ac
   - `"posts"` or empty → `/content/posts/slug/`
   - `"pages"` → `/content/slug/`
   - Other values → `/content/type/slug/`
-- **Examples**: "posts", "docs", "blog", "tutorials"
+- **Advanced Format**: `pages:type` for special page types
+  - `"pages:friends"` → Path: `/content/slug/`, Frontmatter: `type: friends`
+  - `"pages:about"` → Path: `/content/slug/`, Frontmatter: `type: about`
+  - Useful for pages with special types that should use page-style paths
+- **Examples**: "posts", "docs", "blog", "tutorials", "pages:friends", "pages:contact"
 
 #### ⏰ **LastMod** (Auto-Generated)
 - **Type**: Automatic (not configurable)
@@ -512,6 +564,8 @@ frontend, backend, devops
 
 ### Generated Front Matter Example
 
+#### Example 1: Standard Blog Post with Custom Properties
+
 With the following Notion properties:
 - **Title**: "Getting Started with Hugo"
 - **Slug**: "hugo-getting-started"  
@@ -521,6 +575,9 @@ With the following Notion properties:
 - **Summary**: "A comprehensive guide to getting started with Hugo"
 - **Status**: "Published"
 - **Type**: "posts"
+- **Author**: "Jane Smith" (Custom Rich Text)
+- **Reading Time**: "5 minutes" (Custom Rich Text)
+- **Difficulty**: "Beginner" (Custom Select)
 
 The action generates this front matter:
 ```yaml
@@ -537,8 +594,34 @@ categories:
   - web-development
 summary: A comprehensive guide to getting started with Hugo
 type: posts
+Author: Jane Smith
+Reading Time: 5 minutes
+Difficulty: Beginner
+status: Published
 ---
 ```
+
+#### Example 2: Page with Special Type
+
+With the following Notion properties:
+- **Title**: "My Friends"
+- **Type**: "pages:friends"
+- **Layout**: "friends-list" (Custom Select)
+- **Show Contact**: "true" (Custom Select)
+
+The action generates this front matter:
+```yaml
+---
+title: My Friends
+type: friends
+Layout: friends-list
+Show Contact: true
+date: 2025-01-15T00:00:00Z
+lastmod: 2025-01-15T10:30:00Z
+---
+```
+
+And places the file at: `content/my-friends/index.md` (using pages path logic)
 
 > **Note**: The `draft` field is only included when set to `true`. When the status is not "Draft", the field is omitted from the front matter (equivalent to `draft: false`).
 
@@ -550,6 +633,8 @@ Based on the `Type` property:
 |------------|----------------|---------|
 | `posts` or empty | `content/posts/slug/index.md` | `content/posts/hugo-getting-started/index.md` |
 | `pages` | `content/slug/index.md` | `content/about/index.md` |
+| `pages:friends` | `content/slug/index.md` | `content/my-friends/index.md` |
+| `pages:contact` | `content/slug/index.md` | `content/contact/index.md` |
 | `docs` | `content/docs/slug/index.md` | `content/docs/installation/index.md` |
 | `blog` | `content/blog/slug/index.md` | `content/blog/my-story/index.md` |
 
