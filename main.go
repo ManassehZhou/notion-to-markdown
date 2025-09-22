@@ -2,6 +2,7 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log/slog"
 	"os"
 	"strings"
@@ -11,6 +12,13 @@ import (
 	"github.com/ManassehZhou/notion-to-markdown/internal/writer"
 
 	"github.com/jomei/notionapi"
+)
+
+// Version information - set by ldflags during build
+var (
+	version = "dev"     // Will be set by GoReleaser
+	commit  = "unknown" // Will be set by GoReleaser
+	date    = "unknown" // Will be set by GoReleaser
 )
 
 // main is the CLI entrypoint. It reads configuration from flags or environment
@@ -28,7 +36,7 @@ func main() {
 	logger := newLogger(slog.LevelInfo)
 	slog.SetDefault(logger)
 
-	slog.Info("🚀 Notion to Markdown Converter")
+	slog.Info("🚀 Notion to Markdown Converter", "version", version)
 
 	// CLI flags with environment fallbacks
 	tokenFlag := flag.String("token", "", "Notion integration token (or set NOTION_TOKEN)")
@@ -36,7 +44,16 @@ func main() {
 	outFlag := flag.String("out", "content", "Output directory for generated markdown files")
 	configFlag := flag.String("config", "config/notion-to-markdown.yaml", "Path to YAML configuration file")
 	verboseFlag := flag.Bool("verbose", false, "Enable verbose logging")
+	versionFlag := flag.Bool("version", false, "Show version information")
 	flag.Parse()
+
+	// Handle version flag
+	if *versionFlag {
+		fmt.Printf("notion-to-markdown %s\n", version)
+		fmt.Printf("  commit: %s\n", commit)
+		fmt.Printf("  built:  %s\n", date)
+		os.Exit(0)
+	}
 
 	notionToken := *tokenFlag
 	if notionToken == "" {
